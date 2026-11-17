@@ -1,0 +1,240 @@
+﻿PROMPT = '''
+
+
+You are a cybersecurity and privacy classification expert analyzing Reddit
+posts about OpenClaw, an autonomous AI-agent system.
+
+
+TASK
+For EACH post, predict whether the post meaningfully discusses SECURITY
+or PRIVACY.
+
+
+LABELS
+1 = Security or Privacy related
+0 = Not Security or Privacy related
+
+
+CORE DECISION RULE
+Assign 1 only when the post contains at least one CONCRETE security/privacy
+concern, question, claim, incident, risk, data-handling practice, access-control
+issue, attack/vulnerability, or protective security/privacy mechanism.
+
+
+Do NOT assign 1 merely because a security/privacy-associated word appears.
+The meaning of that word in context must actually concern security or privacy.
+
+
+Silently apply the following test to every post:
+
+
+STEP 1 — POSITIVE EVIDENCE
+Ask whether the post meaningfully discusses at least one of these:
+
+
+A. PRIVACY / CONFIDENTIALITY / DATA HANDLING
+- Exposure or leakage of personal, confidential, sensitive, or private data
+- Password, API key, credential, secret, or authentication-token exposure
+- Collection, monitoring, telemetry, tracking, retention, deletion, or sharing
+  of user data when privacy is the issue
+- Third-party access to user information
+- Local processing or self-hosting when explicitly motivated by privacy,
+  confidentiality, or keeping data under the user's control
+
+
+B. AUTHENTICATION / AUTHORIZATION / ACCESS CONTROL
+- Authentication or identity verification
+- Who is allowed to access an agent, account, service, file, tool, or system
+- Authorization, allowlists, access restrictions, least privilege
+- Excessive or unintended permissions
+- Credential or secret management when protection/security is the concern
+- Unauthorized access or use
+
+
+C. ATTACKS / VULNERABILITIES / COMPROMISE
+- Prompt injection or indirect prompt injection
+- Security-relevant jailbreaking
+- Malicious skills, plugins, extensions, packages, or supply-chain threats
+- Malware
+- Vulnerabilities or exploitation
+- Privilege escalation
+- Account, agent, host, or system compromise
+- Remote code execution
+- A malicious or unauthorized party causing the agent/system to reveal data
+  or perform protected actions
+
+
+D. SECURITY CONTROLS / PROTECTIVE MECHANISMS
+- Sandboxing or isolation used to contain the agent or limit damage
+- Encryption or secure storage
+- Security monitoring, auditing, or threat detection
+- Skill/plugin verification or scanning
+- Security guardrails
+- Security/privacy best practices
+
+
+E. SECURE DEPLOYMENT / NETWORK EXPOSURE
+- Secure deployment or hardening
+- Publicly exposed services when exposure is treated as a security risk
+- Firewall, VPN, tunnel, network segmentation, or remote access when used
+  to protect access or reduce security exposure
+- Secure configuration when the purpose is protection rather than ordinary setup
+
+
+If at least one of A-E is concretely present, continue to STEP 2.
+If none is present, assign 0.
+
+
+STEP 2 — EXCLUSION / CONTEXT CHECK
+Even if a keyword appears, assign 0 when the actual topic is only ordinary
+functionality, setup, reliability, cost, or performance.
+
+
+Important negative boundaries:
+
+
+- API key / OAuth / token / authentication mentioned only as a normal way to
+  connect a model, pay for a service, or complete ordinary configuration -> 0
+  UNLESS the post discusses exposure, storage, misuse, unauthorized access,
+  access restrictions, or protection of those credentials.
+
+
+- "permission" mentioned only as a software flag or capability needed to make
+  a feature work -> 0
+  UNLESS the concern is excessive, unintended, unauthorized, or restricted access.
+
+
+- "tracking", "monitoring", "logs", or "traces" used only for token usage,
+  model cost, debugging, performance, observability, or workflow analytics -> 0
+  UNLESS the post concerns surveillance, personal-data collection, security
+  auditing, or sensitive information in logs.
+
+
+- "safe", "risk", or "trust" referring only to reliability, financial loss,
+  model quality, platform-ban risk, business uncertainty, or whether the agent
+  will work correctly -> 0.
+
+
+- "private" referring only to a private repo, private message, private channel,
+  or ordinary personal context -> 0
+  UNLESS the post is actually about confidentiality, exposure, sharing,
+  access, retention, or protection of that information.
+
+
+- self-hosting, local models, Docker, VM, VPS, cloud, Tailscale, VPN, proxy,
+  network, or remote access mentioned only for cost, convenience, installation,
+  connectivity, or performance -> 0
+  UNLESS security/privacy protection or exposure is a meaningful concern.
+
+
+- sandbox mentioned only as a product/test environment or service limitation -> 0
+  UNLESS it is being used to isolate OpenClaw, restrict capabilities, or contain risk.
+
+
+- general autonomy, agent control, reliability, or "can the agent do X?" -> 0
+  UNLESS the issue is authorization, access restriction, unintended privileged
+  action, compromise, or protection of sensitive resources.
+
+
+- general installation errors, configuration errors, coding problems, UI issues,
+  feature requests, model recommendations, hardware, cost, speed, workflow,
+  productivity, or business discussions -> 0 unless a concrete security/privacy
+  issue is also discussed.
+
+
+CONTRASTIVE EXAMPLES
+These examples illustrate the boundary. They are not keyword rules.
+
+
+Example A:
+"How do I add my OpenAI API key? It keeps saying authentication failed."
+-> 0
+Reason: ordinary configuration; no credential-security concern.
+
+
+Example B:
+"Where does OpenClaw store my API key, and can installed skills read it?"
+-> 1
+Reason: credential exposure and unauthorized access are concrete concerns.
+
+
+Example C:
+"I access my dashboard through Tailscale, but the connection keeps dropping."
+-> 0
+Reason: connectivity/reliability only.
+
+
+Example D:
+"Is it safe to expose the dashboard publicly, or should I restrict it with
+Tailscale and a firewall?"
+-> 1
+Reason: public exposure and protected remote access are the topic.
+
+
+Example E:
+"I built a dashboard that tracks API usage, tokens, and model cost."
+-> 0
+Reason: operational tracking, not privacy/security monitoring.
+
+
+Example F:
+"Does OpenClaw track my conversations or send usage data to third parties?"
+-> 1
+Reason: privacy-related collection and third-party data sharing.
+
+
+Example G:
+"The agent needs file-write permission, but the coding task still fails."
+-> 0
+Reason: permission is only a functional/configuration detail.
+
+
+Example H:
+"How can I let OpenClaw read one folder but prevent it from reading the rest
+of my files?"
+-> 1
+Reason: access restriction and least privilege.
+
+
+TIE-BREAKER
+- If security/privacy relevance depends mainly on guessing from a keyword or
+  making an unsupported assumption, assign 0.
+- If a concrete security/privacy issue is clearly described even without words
+  like "security" or "privacy", assign 1.
+- If a post contains both a normal technical topic and a meaningful concrete
+  security/privacy issue, assign 1.
+
+
+READING RULES
+1. Read both TITLE and BODY.
+2. Use the whole context, not isolated words.
+3. Do not infer incidents or risks that the author did not describe.
+4. Return exactly one label for every post.
+5. Do not output explanations or reasoning.
+
+
+OUTPUT
+Return ONLY valid JSON in exactly this structure:
+
+
+{
+  "results": [
+    {
+      "post_number": 1,
+      "predicted_label": 1
+    },
+    {
+      "post_number": 2,
+      "predicted_label": 0
+    }
+  ]
+}
+
+
+POSTS:
+
+
+{posts}
+
+
+'''
