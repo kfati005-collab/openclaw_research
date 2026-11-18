@@ -1,3 +1,9 @@
-# Understanding how OpenClaw Users Navigate Security and Privacy Risks
+# Understanding How OpenClaw Users Navigate Security and Privacy Risks
 
-This repository accompanies the paper. It contains the codebooks, the LLM prompt templates, and the analysis code. Data. The Reddit data (CSV files of posts) are not released, in order to protect the privacy of the users whose posts were analyzed (see the paper's Ethical Considerations). No post or comment content is included in this repository.
+This repository accompanies the paper *Understanding How OpenClaw Users Navigate Security and Privacy Risks*. It contains the codebooks, LLM prompt templates, and analysis code used in the study.
+
+## Data availability and privacy
+
+The Reddit data analyzed in this study are not included in this repository. To protect the privacy of Reddit users, we do not share the collected CSV files or any post or comment content. See the paper’s Ethical Considerations section for more information.
+
+Because the Reddit data are not provided, some analysis code may require access to the underlying data files to run.
